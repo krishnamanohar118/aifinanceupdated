@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, LockKeyhole, Mail, User } from "lucide-react";
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
@@ -45,133 +45,129 @@ export default function AuthPage({ mode }) {
       <div className="auth-panel">
         <Brand />
 
-        <div style={{ marginTop: "24px" }}>
-          <p className="eyebrow">
-            <LockKeyhole size={14} /> Enterprise-grade Encryption
-          </p>
-          <h1>{isLogin ? "Welcome Back" : "Open Your Workspace"}</h1>
+        <div className="auth-header-block">
+          <div className="eyebrow auth-eyebrow">
+            <LockKeyhole size={14} /> 256-Bit Cryptographic Workspace
+          </div>
+          <h1>{isLogin ? "Sign In to FinSight" : "Open Your Workspace"}</h1>
           <p>
             {isLogin
-              ? "Access your unified dashboard, cashflow trends, and financial telemetry."
-              : "Start making informed money decisions with data-driven clarity."}
+              ? "Access institutional cashflow telemetry, category guardrails, and savings trajectories."
+              : "Establish your private financial command center with automated intelligence."}
           </p>
         </div>
 
-        <form onSubmit={submit}>
+        <form onSubmit={submit} className="auth-form-card">
           {!isLogin && (
             <label>
-              Full Name
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-                placeholder="e.g. Alex Morgan"
-                autoComplete="name"
-              />
+              <span className="form-label-text">Full Name</span>
+              <div className="input-with-icon">
+                <User size={16} className="field-icon" />
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  placeholder="e.g. Alex Morgan"
+                  autoComplete="name"
+                />
+              </div>
             </label>
           )}
 
           <label>
-            Email Address
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-              placeholder="you@domain.com"
-              autoComplete="email"
-            />
+            <span className="form-label-text">Email Address</span>
+            <div className="input-with-icon">
+              <Mail size={16} className="field-icon" />
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                placeholder="you@domain.com"
+                autoComplete="email"
+              />
+            </div>
           </label>
 
           <label>
-            Password
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-              minLength="8"
-              placeholder="••••••••"
-              autoComplete={isLogin ? "current-password" : "new-password"}
-            />
-          </label>
-
-          {!isLogin && (
-            <label>
-              Confirm Password
+            <span className="form-label-text">Password</span>
+            <div className="input-with-icon">
+              <LockKeyhole size={16} className="field-icon" />
               <input
                 type="password"
-                value={form.confirmPassword}
-                onChange={(e) =>
-                  setForm({ ...form, confirmPassword: e.target.value })
-                }
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
+                minLength="8"
                 placeholder="••••••••"
-                autoComplete="new-password"
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
+            </div>
+          </label>
+
+          {!isLogin && (
+            <label>
+              <span className="form-label-text">Confirm Password</span>
+              <div className="input-with-icon">
+                <LockKeyhole size={16} className="field-icon" />
+                <input
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={(e) =>
+                    setForm({ ...form, confirmPassword: e.target.value })
+                  }
+                  required
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+              </div>
             </label>
           )}
 
-          {error && <p className="form-error">{error}</p>}
+          {error && <div className="form-error">{error}</div>}
 
           <button
-            className="button button-primary"
+            className="button button-primary auth-submit-btn"
             disabled={busy}
             type="submit"
           >
             <span>
-              {busy ? "Authenticating…" : isLogin ? "Sign In" : "Create Account"}
+              {busy ? "Authenticating Session…" : isLogin ? "Sign In to Workspace" : "Create Private Account"}
             </span>
             <ArrowRight size={16} />
           </button>
         </form>
 
         <p className="auth-switch">
-          {isLogin ? "Need an account?" : "Already have an account?"}{" "}
+          {isLogin ? "New to FinSight?" : "Already established an account?"}{" "}
           <Link to={target}>
-            {isLogin ? "Create account" : "Sign in here"}
+            {isLogin ? "Open an account" : "Sign in here"}
           </Link>
         </p>
 
-        <Link className="back-home" to="/" style={{ marginTop: "16px" }}>
-          ← Return to Overview
+        <Link className="back-home" to="/">
+          ← Return to Public Overview
         </Link>
       </div>
 
-      <aside>
-        <p className="eyebrow">Institutional Clarity</p>
-        <h2>Data-driven control over every financial decision.</h2>
-        <p
-          style={{
-            color: "#94a3b8",
-            fontSize: "1.05rem",
-            lineHeight: 1.6,
-            marginTop: "16px",
-            marginBottom: "32px",
-            maxWidth: "460px",
-          }}
-        >
-          Track inflows, expenses, recurring limits, and goal pace within a unified, private workspace.
+      <aside className="auth-hero-aside">
+        <div className="aside-eyebrow">
+          <ShieldCheck size={16} /> Institutional Financial Intelligence
+        </div>
+        <h2>Data-driven clarity across every financial decision.</h2>
+        <p className="aside-subtext">
+          Consolidate inflows, recurring expenditure guardrails, and automated savings pace within an end-to-end encrypted workspace.
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="aside-highlights-list">
           {[
             "Real-time cashflow telemetry & trend analytics",
-            "Intelligent budget guardrails with proactive alerts",
+            "Intelligent budget guardrails with proactive drift alerts",
             "Goal-aligned capital accumulation trajectories",
             "Private by design with local session persistence",
           ].map((item) => (
-            <div
-              key={item}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                color: "#e2e8f0",
-                fontSize: "0.9rem",
-              }}
-            >
-              <CheckCircle2 size={18} style={{ color: "var(--brand-light)", flexShrink: 0 }} />
+            <div key={item} className="aside-highlight-item">
+              <CheckCircle2 size={18} className="aside-check-icon" />
               <span>{item}</span>
             </div>
           ))}

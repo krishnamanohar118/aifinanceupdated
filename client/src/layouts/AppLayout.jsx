@@ -3,7 +3,9 @@ import {
   Bell,
   ChartNoAxesCombined,
   ChevronLeft,
+  ChevronRight,
   CircleDollarSign,
+  Clock,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -11,10 +13,11 @@ import {
   PiggyBank,
   ReceiptText,
   Settings,
+  Sparkles,
   Sun,
 } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Brand from "../components/Brand";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
@@ -33,14 +36,35 @@ const links = [
 
 export default function AppLayout() {
   const [open, setOpen] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const currentLink = links.find((l) => l.to === location.pathname);
   const userInitial = (user?.name || user?.email || "U")
     .charAt(0)
     .toUpperCase();
+
+  const formattedDate = currentDateTime.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const formattedTime = currentDateTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
   return (
     <div className="app-shell">
@@ -56,6 +80,8 @@ export default function AppLayout() {
           </button>
         </div>
 
+        <div className="sidebar-section-label">Main Navigation</div>
+
         <nav>
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink
@@ -66,6 +92,9 @@ export default function AppLayout() {
             >
               <Icon size={18} />
               <span>{label}</span>
+              {to === "/notifications" && (
+                <span className="sidebar-badge">Live</span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -77,6 +106,7 @@ export default function AppLayout() {
               <p title={user?.name}>{user?.name || "User"}</p>
               <small title={user?.email}>{user?.email}</small>
             </div>
+            <span className="user-status-dot" title="Active workspace session" />
           </div>
           <button className="logout" onClick={logout} type="button">
             <LogOut size={15} />
@@ -96,7 +126,7 @@ export default function AppLayout() {
 
       <main>
         <header className="topbar">
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="topbar-left">
             <button
               className="icon-button mobile-only"
               onClick={() => setOpen(true)}
@@ -105,21 +135,53 @@ export default function AppLayout() {
             >
               <Menu size={18} />
             </button>
-            <div className="topbar-copy">
-              <span>{currentLink ? currentLink.label : "FinSight AI"}</span>
-              <small>Intelligent Financial Workspace</small>
-            </div>
+
+            {/* Breadcrumb Navigation */}
+            <nav className="breadcrumbs" aria-label="Breadcrumb">
+              <span className="breadcrumb-root">FinSight</span>
+              <ChevronRight size={14} className="breadcrumb-separator" />
+              <span className="breadcrumb-item">Workspace</span>
+              <ChevronRight size={14} className="breadcrumb-separator" />
+              <span className="breadcrumb-current">
+                {currentLink ? currentLink.label : "Overview"}
+              </span>
+            </nav>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="topbar-right">
+            {/* Real-time Date and Time */}
+            <div className="topbar-datetime" title="Current Workspace Time">
+              <Clock size={14} />
+              <span className="date-str">{formattedDate}</span>
+              <span className="time-dot">•</span>
+              <span className="time-str">{formattedTime}</span>
+            </div>
+
+            {/* Live Sync Status */}
+            <div className="system-pill" title="Telemetry & Data Streams Synced">
+              <span className="system-dot" />
+              <span>Live Synced</span>
+            </div>
+
+            {/* Dark / Light Mode Toggle */}
             <button
-              className="icon-button"
+              className="theme-toggle-btn"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
               title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
               type="button"
             >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+              {theme === "light" ? (
+                <>
+                  <Moon size={16} />
+                  <span className="theme-toggle-label">Dark</span>
+                </>
+              ) : (
+                <>
+                  <Sun size={16} />
+                  <span className="theme-toggle-label">Light</span>
+                </>
+              )}
             </button>
           </div>
         </header>

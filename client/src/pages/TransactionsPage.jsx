@@ -101,82 +101,50 @@ function TransactionForm({ item, onClose, onSaved }) {
 
   return (
     <Modal
-      title={item ? "Edit Transaction" : "New Transaction"}
+      title={item ? "Edit Transaction Record" : "Create New Transaction"}
       onClose={onClose}
     >
-      <form onSubmit={submit}>
+      <form onSubmit={submit} className="transaction-form">
         {/* Type Toggle Tabs */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px",
-            marginBottom: "18px",
-            padding: "4px",
-            backgroundColor: "var(--surface-subtle)",
-            borderRadius: "var(--radius-sm)",
-            border: "1px solid var(--border)",
-          }}
-        >
+        <div className="segmented-type-toggle">
           <button
             type="button"
+            className={`type-segment-btn expense ${form.type === "Expense" ? "active" : ""}`}
             onClick={() => set("type", "Expense")}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "6px",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-              backgroundColor:
-                form.type === "Expense" ? "var(--surface)" : "transparent",
-              color:
-                form.type === "Expense" ? "var(--expense)" : "var(--ink-secondary)",
-              boxShadow:
-                form.type === "Expense" ? "var(--shadow-xs)" : "none",
-              border: form.type === "Expense" ? "1px solid var(--border)" : "1px solid transparent",
-              transition: "all 0.15s ease",
-            }}
           >
-            Expense
+            <ArrowUpRight size={16} />
+            <span>Expense (Outflow)</span>
           </button>
           <button
             type="button"
+            className={`type-segment-btn income ${form.type === "Income" ? "active" : ""}`}
             onClick={() => set("type", "Income")}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "6px",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-              backgroundColor:
-                form.type === "Income" ? "var(--surface)" : "transparent",
-              color:
-                form.type === "Income" ? "var(--income)" : "var(--ink-secondary)",
-              boxShadow:
-                form.type === "Income" ? "var(--shadow-xs)" : "none",
-              border: form.type === "Income" ? "1px solid var(--border)" : "1px solid transparent",
-              transition: "all 0.15s ease",
-            }}
           >
-            Income
+            <ArrowDownLeft size={16} />
+            <span>Income (Inflow)</span>
           </button>
         </div>
 
         <div className="form-grid">
           <label>
-            Amount
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              required
-              autoFocus
-              value={form.amount}
-              onChange={(e) => set("amount", e.target.value)}
-              placeholder="0.00"
-            />
+            <span className="form-label-text">Amount</span>
+            <div className="input-with-affix">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+                autoFocus
+                value={form.amount}
+                onChange={(e) => set("amount", e.target.value)}
+                placeholder="0.00"
+                className="input-amount"
+              />
+            </div>
           </label>
 
           <label>
-            Date
+            <span className="form-label-text">Transaction Date</span>
             <input
               type="date"
               required
@@ -186,7 +154,7 @@ function TransactionForm({ item, onClose, onSaved }) {
           </label>
 
           <label>
-            Category
+            <span className="form-label-text">Category Classification</span>
             <select
               value={form.category}
               onChange={(e) => set("category", e.target.value)}
@@ -200,7 +168,7 @@ function TransactionForm({ item, onClose, onSaved }) {
           </label>
 
           <label>
-            Payment Method
+            <span className="form-label-text">Payment Channel</span>
             <select
               value={form.paymentMethod}
               onChange={(e) => set("paymentMethod", e.target.value)}
@@ -214,27 +182,27 @@ function TransactionForm({ item, onClose, onSaved }) {
           </label>
 
           <label className="wide">
-            Description
+            <span className="form-label-text">Description / Payee</span>
             <input
               required
               maxLength="140"
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
-              placeholder="e.g. Grocery shopping, Client invoice, Dinner"
+              placeholder="e.g. AWS Cloud Services, Grocery Supermarket, Client Invoice"
             />
           </label>
 
           <label className="wide">
-            Notes (Optional)
+            <span className="form-label-text">Audit Notes & Memo (Optional)</span>
             <input
               value={form.notes || ""}
               onChange={(e) => set("notes", e.target.value)}
-              placeholder="Add any extra details or reference IDs"
+              placeholder="Add reference numbers, tax code, or reconciliation details"
             />
           </label>
         </div>
 
-        {error && <p className="form-error">{error}</p>}
+        {error && <div className="form-error">{error}</div>}
 
         <div className="modal-actions">
           <button
@@ -251,7 +219,7 @@ function TransactionForm({ item, onClose, onSaved }) {
             className="button button-primary"
             disabled={busy}
           >
-            {busy ? "Saving…" : item ? "Update Transaction" : "Save Transaction"}
+            {busy ? "Saving Entry…" : item ? "Update Record" : "Save Transaction"}
           </button>
         </div>
       </form>
@@ -368,8 +336,8 @@ export default function TransactionsPage() {
   return (
     <>
       <PageHeader
-        title="Transactions"
-        description="Comprehensive audit of all financial inflows and outflows."
+        title="Transaction Ledger"
+        description="Audited double-entry record of all capital inflows, expenditures, and transfers."
       >
         <button className="button button-primary" onClick={openAdd} type="button">
           <Plus size={16} />
@@ -377,66 +345,74 @@ export default function TransactionsPage() {
         </button>
       </PageHeader>
 
-      {/* Summary KPI Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px",
-          marginBottom: "24px",
-        }}
-      >
-        <div className="card" style={{ padding: "16px 20px" }}>
-          <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-            Total Inflow
-          </span>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "var(--income)", marginTop: "4px" }}>
+      {/* Summary KPI Ribbon */}
+      <div className="ledger-kpi-grid">
+        <div className="card ledger-kpi-card">
+          <div className="ledger-kpi-header">
+            <span className="ledger-kpi-label">Total Inflow</span>
+            <div className="kpi-mini-icon income">
+              <ArrowDownLeft size={14} />
+            </div>
+          </div>
+          <div className="ledger-kpi-value income">
             +<Money value={summary.income} />
           </div>
+          <span className="ledger-kpi-sub">Total credited funds</span>
         </div>
 
-        <div className="card" style={{ padding: "16px 20px" }}>
-          <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-            Total Outflow
-          </span>
-          <div style={{ fontSize: "1.45rem", fontWeight: 800, color: "var(--ink)", marginTop: "4px" }}>
+        <div className="card ledger-kpi-card">
+          <div className="ledger-kpi-header">
+            <span className="ledger-kpi-label">Total Outflow</span>
+            <div className="kpi-mini-icon expense">
+              <ArrowUpRight size={14} />
+            </div>
+          </div>
+          <div className="ledger-kpi-value expense">
             −<Money value={summary.expenses} />
           </div>
+          <span className="ledger-kpi-sub">Total debited expenses</span>
         </div>
 
-        <div className="card" style={{ padding: "16px 20px" }}>
-          <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-            Net Cashflow
-          </span>
+        <div className="card ledger-kpi-card">
+          <div className="ledger-kpi-header">
+            <span className="ledger-kpi-label">Net Operating Cashflow</span>
+            <div className="kpi-mini-icon brand">
+              <Filter size={14} />
+            </div>
+          </div>
           <div
-            style={{
-              fontSize: "1.45rem",
-              fontWeight: 800,
-              color: summary.balance >= 0 ? "var(--brand)" : "var(--expense)",
-              marginTop: "4px",
-            }}
+            className={`ledger-kpi-value ${
+              summary.balance >= 0 ? "brand" : "expense"
+            }`}
           >
             <Money value={summary.balance} />
           </div>
+          <span className="ledger-kpi-sub">
+            {summary.balance >= 0 ? "Positive cash surplus" : "Net operating deficit"}
+          </span>
+        </div>
+
+        <div className="card ledger-kpi-card">
+          <div className="ledger-kpi-header">
+            <span className="ledger-kpi-label">Total Records</span>
+            <span className="count-pill">{items.length}</span>
+          </div>
+          <div className="ledger-kpi-value">
+            {items.length} <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink-muted)" }}>entries</span>
+          </div>
+          <span className="ledger-kpi-sub">
+            {hasActiveFilters ? "Filtered results subset" : "Complete timeline set"}
+          </span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="filters">
-        <div style={{ position: "relative", flex: "1 1 240px" }}>
-          <Search
-            size={16}
-            style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "var(--ink-muted)",
-            }}
-          />
+      <div className="ledger-filters-bar">
+        <div className="search-field-wrapper">
+          <Search size={16} className="search-icon" />
           <input
-            style={{ paddingLeft: "36px", width: "100%" }}
-            placeholder="Search description or category…"
+            className="search-input"
+            placeholder="Search description, payee, category, or note…"
             value={filters.search}
             onChange={(e) =>
               setFilters((current) => ({
@@ -445,51 +421,63 @@ export default function TransactionsPage() {
               }))
             }
           />
+          {filters.search && (
+            <button
+              className="search-clear-btn"
+              onClick={() => setFilters((c) => ({ ...c, search: "" }))}
+              type="button"
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
-        <select
-          value={filters.type}
-          onChange={(e) =>
-            setFilters((current) => ({
-              ...current,
-              type: e.target.value,
-            }))
-          }
-        >
-          <option value="">All Types</option>
-          <option value="Income">Income only</option>
-          <option value="Expense">Expense only</option>
-        </select>
-
-        <select
-          value={filters.category}
-          onChange={(e) =>
-            setFilters((current) => ({
-              ...current,
-              category: e.target.value,
-            }))
-          }
-        >
-          <option value="">All Categories</option>
-          {[...incomeCategories, ...expenseCategories]
-            .filter((category, index, array) => array.indexOf(category) === index)
-            .map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-        </select>
-
-        {hasActiveFilters && (
-          <button
-            type="button"
-            className="button button-secondary"
-            onClick={clearFilters}
-            style={{ height: "40px", padding: "0 12px", fontSize: "0.82rem" }}
+        <div className="filter-selects-group">
+          <select
+            value={filters.type}
+            onChange={(e) =>
+              setFilters((current) => ({
+                ...current,
+                type: e.target.value,
+              }))
+            }
           >
-            <X size={14} /> Clear filters
-          </button>
-        )}
+            <option value="">All Flow Types</option>
+            <option value="Income">Income (Inflow)</option>
+            <option value="Expense">Expense (Outflow)</option>
+          </select>
+
+          <select
+            value={filters.category}
+            onChange={(e) =>
+              setFilters((current) => ({
+                ...current,
+                category: e.target.value,
+              }))
+            }
+          >
+            <option value="">All Categories</option>
+            {[...incomeCategories, ...expenseCategories]
+              .filter((category, index, array) => array.indexOf(category) === index)
+              .map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+          </select>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="button button-secondary clear-filters-btn"
+              onClick={clearFilters}
+            >
+              <X size={14} />
+              <span>Reset Filters</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {error && data && <div className="form-error" style={{ marginBottom: "16px" }}>{error}</div>}
@@ -498,90 +486,88 @@ export default function TransactionsPage() {
         <EmptyState
           message={
             hasActiveFilters
-              ? "No transactions match your search filters."
-              : "No transactions recorded yet. Click 'New Transaction' to begin."
+              ? "No transactions match your current search filters. Try adjusting the query."
+              : "No transactions recorded yet in this workspace. Click 'New Transaction' to begin."
           }
         />
       ) : (
-        <div className="card transaction-list">
-          {items.map((item) => {
-            const isIncome = item.type === "Income";
+        <div className="card table-container">
+          <table className="dense-financial-table">
+            <thead>
+              <tr>
+                <th style={{ width: "110px" }}>Date</th>
+                <th>Description / Payee</th>
+                <th style={{ width: "140px" }}>Category</th>
+                <th style={{ width: "120px" }}>Method</th>
+                <th style={{ width: "100px" }}>Type</th>
+                <th style={{ width: "130px", textAlign: "right" }}>Amount</th>
+                <th style={{ width: "80px", textAlign: "center" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => {
+                const isIncome = item.type === "Income";
 
-            return (
-              <article className="transaction" key={item._id}>
-                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "8px",
-                      backgroundColor: isIncome
-                        ? "var(--income-soft)"
-                        : "var(--surface-subtle)",
-                      color: isIncome ? "var(--income)" : "var(--ink-secondary)",
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {isIncome ? (
-                      <ArrowDownLeft size={18} />
-                    ) : (
-                      <ArrowUpRight size={18} />
-                    )}
-                  </div>
-
-                  <div>
-                    <b>{item.description}</b>
-                    <small>
-                      {formatDate(item.date)} ·{" "}
-                      <span
-                        style={{
-                          backgroundColor: "var(--surface-subtle)",
-                          padding: "2px 6px",
-                          borderRadius: "4px",
-                          fontWeight: 500,
-                        }}
-                      >
+                return (
+                  <tr key={item._id} className="table-row">
+                    <td className="table-date-cell">
+                      {formatDate(item.date)}
+                    </td>
+                    <td className="table-desc-cell">
+                      <div className="desc-text">{item.description}</div>
+                      {item.notes && (
+                        <div className="notes-memo">“{item.notes}”</div>
+                      )}
+                    </td>
+                    <td>
+                      <span className="category-pill-tag">
                         {item.category}
-                      </span>{" "}
-                      · {item.paymentMethod}
-                      {item.notes ? ` · "${item.notes}"` : ""}
-                    </small>
-                  </div>
-                </div>
+                      </span>
+                    </td>
+                    <td>
+                      <span className="method-pill-tag">
+                        {item.paymentMethod}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`flow-badge ${isIncome ? "income" : "expense"}`}>
+                        {isIncome ? "Inflow" : "Outflow"}
+                      </span>
+                    </td>
+                    <td className="table-amount-cell">
+                      <span className={`tabular-amount ${isIncome ? "income" : "expense"}`}>
+                        {isIncome ? "+" : "−"}
+                        <Money value={item.amount} />
+                      </span>
+                    </td>
+                    <td className="table-actions-cell">
+                      <div className="row-actions-group">
+                        <button
+                          className="action-icon-btn edit"
+                          onClick={() => openEdit(item)}
+                          aria-label="Edit transaction"
+                          title="Edit transaction"
+                          type="button"
+                        >
+                          <Edit3 size={14} />
+                        </button>
 
-                <span
-                  className={`amount ${isIncome ? "income" : "expense"}`}
-                >
-                  {isIncome ? "+" : "−"}
-                  <Money value={item.amount} />
-                </span>
-
-                <div className="row-actions">
-                  <button
-                    className="icon-button"
-                    onClick={() => openEdit(item)}
-                    aria-label="Edit transaction"
-                    title="Edit transaction"
-                    type="button"
-                  >
-                    <Edit3 size={15} />
-                  </button>
-
-                  <button
-                    className="icon-button danger"
-                    onClick={() => deleteItem(item._id)}
-                    aria-label="Delete transaction"
-                    title="Delete transaction"
-                    type="button"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+                        <button
+                          className="action-icon-btn delete"
+                          onClick={() => deleteItem(item._id)}
+                          aria-label="Delete transaction"
+                          title="Delete transaction"
+                          type="button"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 

@@ -1,12 +1,16 @@
 import { WalletCards } from "lucide-react";
 import { Link } from "react-router-dom";
+
 export default function Brand() {
   return (
     <Link className="brand" to="/">
       <span className="brand-mark">
-        <WalletCards size={20} />
+        <WalletCards size={18} />
       </span>
-      <span>FinSight AI</span>
+      <span className="brand-text">
+        <span className="brand-name">FinSight</span>
+        <span className="brand-badge">AI</span>
+      </span>
     </Link>
   );
 }

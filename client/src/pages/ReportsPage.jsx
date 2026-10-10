@@ -1,16 +1,32 @@
 import { useState } from "react";
-import { Calendar, Download, FileSpreadsheet, FileText } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Calendar,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  PieChart,
+  ReceiptText,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { jsPDF } from "jspdf";
 import api from "../services/api";
 import PageHeader from "../components/PageHeader";
 import Money from "../components/Money";
-import { Loading } from "../components/States";
+import { EmptyState, Loading } from "../components/States";
+import { formatDate } from "../utils/finance";
 
 export default function ReportsPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const quickYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 
   const load = async () => {
     setLoading(true);
@@ -53,7 +69,7 @@ export default function ReportsPage() {
     );
     const a = Object.assign(document.createElement("a"), {
       href: URL.createObjectURL(blob),
-      download: `finance-report-${year}.csv`,
+      download: `fintech-annual-report-${year}.csv`,
     });
     a.click();
     URL.revokeObjectURL(a.href);
@@ -98,60 +114,110 @@ export default function ReportsPage() {
       y += 7;
     });
 
-    doc.save(`finance-report-${year}.pdf`);
+    doc.save(`fintech-annual-report-${year}.pdf`);
   };
+
+  const income = Number(report?.summary?.income) || 0;
+  const expenses = Number(report?.summary?.expenses) || 0;
+  const savings = Number(report?.summary?.savings) || 0;
+  const annualSavingsRate = income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
 
   return (
     <>
       <PageHeader
-        title="Financial Statements & Reports"
-        description="Comprehensive fiscal year accounting reports with CSV and PDF export capability."
+        title="Audited Financial Statements"
+        description="Comprehensive fiscal year accounting statements, ledger summaries, and data exports."
       />
 
       {/* Year Selection Filter Bar */}
-      <div className="filters" style={{ maxWidth: "480px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-          <Calendar size={18} style={{ color: "var(--ink-muted)" }} />
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Fiscal Year:</span>
-          <input
-            type="number"
-            value={year}
-            min="2000"
-            max="2100"
-            onChange={(e) => setYear(e.target.value)}
-            style={{ width: "100px" }}
-          />
+      <div className="card year-selector-bar">
+        <div className="year-selector-left">
+          <div className="fiscal-year-tag">
+            <Calendar size={16} />
+            <span>Fiscal Year:</span>
+          </div>
+
+          <div className="quick-years-cluster">
+            {quickYears.map((yr) => (
+              <button
+                key={yr}
+                type="button"
+                className={`quick-year-btn ${Number(year) === yr ? "active" : ""}`}
+                onClick={() => setYear(yr)}
+              >
+                {yr}
+              </button>
+            ))}
+          </div>
+
+          <div className="custom-year-input-wrap">
+            <input
+              type="number"
+              value={year}
+              min="2000"
+              max="2100"
+              onChange={(e) => setYear(e.target.value)}
+              className="year-input-field"
+              title="Enter custom fiscal year"
+            />
+          </div>
         </div>
 
         <button
-          className="button button-primary"
+          className="button button-primary generate-statement-btn"
           onClick={load}
           disabled={loading}
           type="button"
         >
-          {loading ? "Generating…" : "Generate Statement"}
+          <Sparkles size={16} />
+          <span>{loading ? "Compiling Statement…" : "Generate Statement"}</span>
         </button>
       </div>
 
-      {error && <div className="form-error" style={{ marginBottom: "16px" }}>{error}</div>}
+      {error && <div className="form-error" style={{ marginBottom: "20px" }}>{error}</div>}
 
-      {loading && <Loading label="Compiling financial report data…" />}
+      {loading && <Loading label={`Compiling fiscal telemetry for year ${year}…`} />}
 
-      {report && (
-        <section className="card report">
-          <div className="action-row">
-            <div>
-              <h2 style={{ fontSize: "1.35rem", margin: "0 0 4px" }}>
-                Fiscal Statement: {year}
-              </h2>
-              <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--ink-muted)" }}>
-                Audited transaction totals across all accounts.
+      {!loading && !report && (
+        <div className="card report-empty-prompt">
+          <div className="empty-report-icon-box">
+            <FileText size={32} />
+          </div>
+          <h3>Select Fiscal Year and Generate Statement</h3>
+          <p>
+            FinSight AI will consolidate all recorded transactions, calculate annual inflow,
+            spending distribution, and retained capital for fiscal year {year}.
+          </p>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={load}
+            style={{ marginTop: "12px" }}
+          >
+            Generate {year} Statement
+          </button>
+        </div>
+      )}
+
+      {!loading && report && (
+        <section className="card report-overview-container">
+          {/* Executive Summary Header */}
+          <div className="report-header-banner">
+            <div className="report-header-left">
+              <div className="report-title-line">
+                <h2>Fiscal Statement: {year}</h2>
+                <span className="audited-badge">
+                  <ShieldCheck size={14} /> Audited Summary
+                </span>
+              </div>
+              <p className="report-subtitle">
+                Consolidated balance sheet and category disbursements across all tracked accounts.
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div className="report-export-actions">
               <button
-                className="button button-secondary"
+                className="button button-secondary export-btn"
                 onClick={csv}
                 type="button"
                 title="Download CSV Spreadsheet"
@@ -160,7 +226,7 @@ export default function ReportsPage() {
                 <span>Export CSV</span>
               </button>
               <button
-                className="button button-secondary"
+                className="button button-secondary export-btn"
                 onClick={pdf}
                 type="button"
                 title="Download PDF Document"
@@ -171,74 +237,171 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "16px",
-              margin: "24px 0",
-            }}
-          >
-            <div className="card" style={{ padding: "18px 20px" }}>
-              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-                Total Income
-              </span>
-              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--income)", marginTop: "4px" }}>
-                +<Money value={report.summary.income} />
+          {/* Year Summary KPIs */}
+          <div className="report-kpi-grid">
+            <div className="card report-kpi-card">
+              <div className="report-kpi-header">
+                <span className="report-kpi-label">Total Inflow</span>
+                <div className="kpi-mini-icon income">
+                  <ArrowDownLeft size={14} />
+                </div>
               </div>
+              <div className="report-kpi-val income">
+                +<Money value={income} />
+              </div>
+              <span className="report-kpi-sub">Total annualized income</span>
             </div>
 
-            <div className="card" style={{ padding: "18px 20px" }}>
-              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-                Total Expenses
-              </span>
-              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--ink)", marginTop: "4px" }}>
-                −<Money value={report.summary.expenses} />
+            <div className="card report-kpi-card">
+              <div className="report-kpi-header">
+                <span className="report-kpi-label">Total Outflow</span>
+                <div className="kpi-mini-icon expense">
+                  <ArrowUpRight size={14} />
+                </div>
               </div>
+              <div className="report-kpi-val expense">
+                −<Money value={expenses} />
+              </div>
+              <span className="report-kpi-sub">Total annualized expenses</span>
             </div>
 
-            <div className="card" style={{ padding: "18px 20px" }}>
-              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-muted)", textTransform: "uppercase" }}>
-                Net Retained Capital
-              </span>
+            <div className="card report-kpi-card">
+              <div className="report-kpi-header">
+                <span className="report-kpi-label">Retained Capital</span>
+                <div className="kpi-mini-icon brand">
+                  <TrendingUp size={14} />
+                </div>
+              </div>
               <div
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 800,
-                  color: report.summary.savings >= 0 ? "var(--brand)" : "var(--expense)",
-                  marginTop: "4px",
-                }}
+                className={`report-kpi-val ${
+                  savings >= 0 ? "brand" : "expense"
+                }`}
               >
-                <Money value={report.summary.savings} />
+                <Money value={savings} />
               </div>
+              <span className="report-kpi-sub">Net retained savings balance</span>
+            </div>
+
+            <div className="card report-kpi-card">
+              <div className="report-kpi-header">
+                <span className="report-kpi-label">Annual Savings Rate</span>
+                <div className="kpi-mini-icon brand">
+                  <Sparkles size={14} />
+                </div>
+              </div>
+              <div
+                className={`report-kpi-val ${
+                  annualSavingsRate >= 20 ? "income" : annualSavingsRate > 0 ? "brand" : "zero"
+                }`}
+              >
+                {annualSavingsRate}%
+              </div>
+              <span className="report-kpi-sub">
+                {annualSavingsRate >= 20 ? "Target benchmark achieved" : "Below 20% capital rate"}
+              </span>
             </div>
           </div>
 
-          <h3 style={{ fontSize: "1.1rem", margin: "24px 0 14px" }}>
-            Expense Breakdown by Category
-          </h3>
+          {/* Category Breakdown Section */}
+          <div className="report-breakdown-section">
+            <div className="section-title-strip">
+              <PieChart size={18} />
+              <h3>Disbursement Breakdown by Category</h3>
+            </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {report.categories.map((x) => (
-              <div
-                key={x.category}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 16px",
-                  backgroundColor: "var(--surface-subtle)",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{x.category}</span>
-                <b style={{ fontSize: "0.95rem" }}>
-                  <Money value={x.amount} />
-                </b>
+            {report.categories && report.categories.length > 0 ? (
+              <div className="report-category-list">
+                {report.categories.map((x) => {
+                  const catAmount = Number(x.amount) || 0;
+                  const catPercent = expenses > 0 ? ((catAmount / expenses) * 100).toFixed(1) : 0;
+
+                  return (
+                    <div key={x.category} className="report-category-row">
+                      <div className="report-category-info">
+                        <span className="report-category-name">{x.category}</span>
+                        <span className="report-category-pct">{catPercent}% of total expenses</span>
+                      </div>
+
+                      <div className="report-category-progress">
+                        <div className="progress progress-report">
+                          <i
+                            className="progress-fill"
+                            style={{
+                              width: `${Math.min(100, catPercent)}%`,
+                              background: "var(--brand)",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="report-category-amount">
+                        <Money value={catAmount} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            ) : (
+              <EmptyState message="No category spending recorded for this fiscal year." />
+            )}
           </div>
+
+          {/* Transactions Preview Table */}
+          {report.transactions && report.transactions.length > 0 && (
+            <div className="report-transactions-section">
+              <div className="section-title-strip">
+                <ReceiptText size={18} />
+                <h3>Audited Transactions Ledger Preview ({report.transactions.length} entries)</h3>
+              </div>
+
+              <div className="table-container">
+                <table className="dense-financial-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "110px" }}>Date</th>
+                      <th>Description</th>
+                      <th style={{ width: "130px" }}>Category</th>
+                      <th style={{ width: "100px" }}>Flow</th>
+                      <th style={{ width: "130px", textAlign: "right" }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.transactions.slice(0, 15).map((t, idx) => {
+                      const isIncome = t.type === "Income";
+                      return (
+                        <tr key={t._id || idx} className="table-row">
+                          <td className="table-date-cell">{formatDate(t.date)}</td>
+                          <td className="table-desc-cell">
+                            <span className="desc-text">{t.description}</span>
+                          </td>
+                          <td>
+                            <span className="category-pill-tag">{t.category}</span>
+                          </td>
+                          <td>
+                            <span className={`flow-badge ${isIncome ? "income" : "expense"}`}>
+                              {isIncome ? "Inflow" : "Outflow"}
+                            </span>
+                          </td>
+                          <td className="table-amount-cell">
+                            <span className={`tabular-amount ${isIncome ? "income" : "expense"}`}>
+                              {isIncome ? "+" : "−"}
+                              <Money value={t.amount} />
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {report.transactions.length > 15 && (
+                <p className="ledger-preview-note">
+                  Showing first 15 of {report.transactions.length} records. Download CSV or PDF for full ledger.
+                </p>
+              )}
+            </div>
+          )}
         </section>
       )}
     </>

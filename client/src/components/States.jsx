@@ -1,9 +1,11 @@
-import { AlertCircle, Inbox, LoaderCircle } from "lucide-react";
+import { AlertCircle, Inbox, LoaderCircle, Sparkles } from "lucide-react";
 
 export function Loading({ label = "Loading financial data…" }) {
   return (
     <div className="state">
-      <LoaderCircle className="spin" size={32} />
+      <div className="loading-capsule">
+        <LoaderCircle className="spin" size={32} />
+      </div>
       <p>{label}</p>
     </div>
   );
@@ -14,10 +16,11 @@ export function ErrorState({ message = "Something went wrong." }) {
     <div className="state">
       <div
         style={{
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           borderRadius: "50%",
           backgroundColor: "var(--expense-soft)",
+          border: "1px solid var(--expense-border)",
           display: "grid",
           placeItems: "center",
           color: "var(--expense)",
@@ -25,7 +28,7 @@ export function ErrorState({ message = "Something went wrong." }) {
       >
         <AlertCircle size={22} />
       </div>
-      <p style={{ color: "var(--expense)", fontWeight: 500 }}>{message}</p>
+      <p style={{ color: "var(--expense)", fontWeight: 600 }}>{message}</p>
     </div>
   );
 }
@@ -35,9 +38,9 @@ export function EmptyState({ message = "Nothing here yet." }) {
     <div className="state">
       <div
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
+          width: 52,
+          height: 52,
+          borderRadius: "12px",
           backgroundColor: "var(--surface-subtle)",
           display: "grid",
           placeItems: "center",
@@ -45,7 +48,7 @@ export function EmptyState({ message = "Nothing here yet." }) {
           border: "1px solid var(--border)",
         }}
       >
-        <Inbox size={24} />
+        <Inbox size={26} />
       </div>
       <p>{message}</p>
     </div>

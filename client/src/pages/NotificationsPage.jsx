@@ -54,112 +54,68 @@ export default function NotificationsPage() {
   return (
     <>
       <PageHeader
-        title="Notifications & Alerts"
+        title="Audit Logs & System Alerts"
         description={
           unreadCount > 0
-            ? `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}.`
-            : "All notices and system updates are up to date."
+            ? `You have ${unreadCount} pending financial alert${unreadCount === 1 ? "" : "s"} requiring review.`
+            : "All ledger alerts and guardrail notifications are acknowledged."
         }
       >
         {unreadCount > 0 && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 12px",
-              borderRadius: "var(--radius-full)",
-              backgroundColor: "var(--brand-tint)",
-              color: "var(--brand)",
-              fontSize: "0.82rem",
-              fontWeight: 600,
-            }}
-          >
+          <span className="notifications-unread-pill">
             <Bell size={14} />
-            {unreadCount} Unread
+            <span>{unreadCount} Unread Alerts</span>
           </span>
         )}
       </PageHeader>
 
       {!data.items || data.items.length === 0 ? (
-        <EmptyState message="No notifications in your inbox. Important budget alerts and monthly updates will appear here." />
+        <EmptyState message="No notifications in your inbox. Important budget alerts, monthly pace notifications, and system events will appear here." />
       ) : (
-        <div className="stack">
+        <div className="notifications-feed-list">
           {data.items.map((notification) => {
             const isUnread = !notification.read;
 
             return (
               <article
-                className={`card notification ${isUnread ? "unread" : ""}`}
+                className={`card notification-card-item ${isUnread ? "unread" : "read"}`}
                 key={notification._id}
                 onClick={() => {
                   if (isUnread) {
                     markAsRead(notification._id);
                   }
                 }}
-                style={{
-                  cursor: isUnread ? "pointer" : "default",
-                  position: "relative",
-                  borderRadius: "var(--radius)",
-                }}
               >
-                <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: "8px",
-                    backgroundColor: isUnread ? "var(--brand-soft)" : "var(--surface-subtle)",
-                    color: isUnread ? "var(--brand)" : "var(--ink-muted)",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
+                <div className={`notification-icon-wrapper ${isUnread ? "unread" : ""}`}>
                   <Bell size={18} />
                 </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                    <h2 style={{ fontSize: "1rem", fontWeight: 700, margin: 0 }}>
+                <div className="notification-content-area">
+                  <div className="notification-title-strip">
+                    <h3 className="notification-title-text">
                       {notification.title}
-                    </h2>
-                    {isUnread && (
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          backgroundColor: "var(--brand)",
-                          display: "inline-block",
-                        }}
-                      />
+                    </h3>
+                    {isUnread ? (
+                      <span className="unread-dot-badge">New Alert</span>
+                    ) : (
+                      <span className="acknowledged-tag">
+                        <CheckCheck size={13} /> Acknowledged
+                      </span>
                     )}
                   </div>
 
-                  <p style={{ margin: "0 0 6px", fontSize: "0.88rem", color: "var(--ink-secondary)" }}>
+                  <p className="notification-message-body">
                     {notification.message}
                   </p>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      fontSize: "0.75rem",
-                      color: "var(--ink-muted)",
-                    }}
-                  >
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <div className="notification-footer-meta">
+                    <span className="notification-timestamp">
                       <Clock size={12} />
-                      {formatDate(notification.createdAt)}
+                      <span>{formatDate(notification.createdAt)}</span>
                     </span>
-                    {isUnread ? (
-                      <span style={{ color: "var(--brand)", fontWeight: 600 }}>
-                        Click to mark as read
-                      </span>
-                    ) : (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                        <CheckCheck size={13} /> Read
+                    {isUnread && (
+                      <span className="mark-read-hint">
+                        Click to acknowledge
                       </span>
                     )}
                   </div>

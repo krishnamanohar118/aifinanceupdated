@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import {
   Calendar,
   CheckCircle2,
+  Clock,
   PiggyBank,
   Plus,
+  Sparkles,
+  Target,
   Trash2,
+  TrendingUp,
 } from "lucide-react";
 
 import api from "../services/api";
@@ -18,6 +22,9 @@ export default function GoalsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [show, setShow] = useState(false);
+  const [depositGoal, setDepositGoal] = useState(null);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositBusy, setDepositBusy] = useState(false);
   const [error, setError] = useState("");
 
   const load = async () => {
@@ -61,31 +68,33 @@ export default function GoalsPage() {
     }
   };
 
-  const addSavings = async (goal) => {
-    const amount = window.prompt(`How much would you like to deposit into "${goal.name}"?`);
-
-    if (!amount || Number(amount) <= 0) {
-      return;
-    }
+  const submitDeposit = async (e) => {
+    e.preventDefault();
+    if (!depositGoal || Number(depositAmount) <= 0) return;
 
     try {
+      setDepositBusy(true);
       setError("");
-      await api.put(`/goals/${goal._id}`, {
-        currentAmount: Number(goal.currentAmount || 0) + Number(amount),
+      await api.put(`/goals/${depositGoal._id}`, {
+        currentAmount: Number(depositGoal.currentAmount || 0) + Number(depositAmount),
       });
+      setDepositGoal(null);
+      setDepositAmount("");
       await load();
     } catch (err) {
       console.error("Add savings error:", err);
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Failed to add savings.",
+          "Failed to deposit savings into goal.",
       );
+    } finally {
+      setDepositBusy(false);
     }
   };
 
-  const deleteGoal = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this savings goal?")) {
+  const deleteGoal = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete the savings goal "${name}"?`)) {
       return;
     }
 
@@ -104,18 +113,23 @@ export default function GoalsPage() {
   };
 
   if (loading) {
-    return <Loading />;
+    return <Loading label="Calculating savings milestones & velocity…" />;
   }
 
   if (error && !items.length) {
     return <ErrorState message={error} />;
   }
 
+  const totalTarget = items.reduce((acc, g) => acc + (Number(g.targetAmount) || 0), 0);
+  const totalSaved = items.reduce((acc, g) => acc + (Number(g.currentAmount) || 0), 0);
+  const totalRemaining = Math.max(0, totalTarget - totalSaved);
+  const overallPace = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
+
   return (
     <>
       <PageHeader
-        title="Savings Goals"
-        description="Targeted capital accumulation milestones with automated monthly pace tracking."
+        title="Savings Goals & Reserves"
+        description="Targeted capital accumulation milestones with automated monthly pace calculation."
       >
         <button
           type="button"
@@ -123,16 +137,51 @@ export default function GoalsPage() {
           onClick={() => setShow(true)}
         >
           <Plus size={16} />
-          <span>New Goal</span>
+          <span>New Savings Goal</span>
         </button>
       </PageHeader>
 
-      {error && <div className="form-error" style={{ marginBottom: "16px" }}>{error}</div>}
+      {/* Aggregate Milestones Summary Banner */}
+      <div className="card goals-summary-banner">
+        <div className="goals-banner-col">
+          <span className="goals-banner-label">Active Portfolios</span>
+          <div className="goals-banner-val">{items.length} <span className="sub-unit">Goals</span></div>
+          <span className="goals-banner-sub">Monitored wealth milestones</span>
+        </div>
+
+        <div className="goals-banner-divider" />
+
+        <div className="goals-banner-col">
+          <span className="goals-banner-label">Total Capital Target</span>
+          <div className="goals-banner-val"><Money value={totalTarget} /></div>
+          <span className="goals-banner-sub">Target reserve threshold</span>
+        </div>
+
+        <div className="goals-banner-divider" />
+
+        <div className="goals-banner-col">
+          <span className="goals-banner-label">Current Accumulated</span>
+          <div className="goals-banner-val income">+<Money value={totalSaved} /></div>
+          <span className="goals-banner-sub">Liquid funds earmarked</span>
+        </div>
+
+        <div className="goals-banner-divider" />
+
+        <div className="goals-banner-col">
+          <span className="goals-banner-label">Portfolio Completion</span>
+          <div className="goals-banner-val brand">{overallPace}%</div>
+          <span className="goals-banner-sub">
+            <Money value={totalRemaining} /> remaining
+          </span>
+        </div>
+      </div>
+
+      {error && <div className="form-error" style={{ marginBottom: "20px" }}>{error}</div>}
 
       {!items.length ? (
-        <EmptyState message="No savings goals established yet. Create your first goal to track progress toward major financial milestones." />
+        <EmptyState message="No savings goals established yet. Create your first milestone to track progress toward major financial goals." />
       ) : (
-        <div className="goal-grid">
+        <div className="goal-grid-container">
           {items.map((goal) => {
             const progress = Math.max(
               0,
@@ -141,148 +190,132 @@ export default function GoalsPage() {
             const isCompleted = progress >= 100;
 
             return (
-              <article className="card goal" key={goal._id}>
-                <button
-                  type="button"
-                  className="icon-button danger float"
-                  onClick={() => deleteGoal(goal._id)}
-                  aria-label={`Delete ${goal.name}`}
-                  title={`Delete ${goal.name}`}
-                >
-                  <Trash2 size={15} />
-                </button>
+              <article className={`card goal-card-elevated ${isCompleted ? "completed" : ""}`} key={goal._id}>
+                <div className="goal-card-top">
+                  <div className="goal-title-cluster">
+                    <div className={`goal-icon-capsule ${isCompleted ? "completed" : ""}`}>
+                      {isCompleted ? <CheckCircle2 size={20} /> : <PiggyBank size={20} />}
+                    </div>
+                    <div>
+                      <h3 className="goal-title-text">{goal.name}</h3>
+                      {goal.targetDate && (
+                        <div className="goal-deadline-chip">
+                          <Calendar size={12} />
+                          <span>Target: {formatDate(goal.targetDate)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingRight: "40px" }}>
-                  <div
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "8px",
-                      backgroundColor: isCompleted ? "var(--income-soft)" : "var(--brand-tint)",
-                      color: isCompleted ? "var(--income)" : "var(--brand)",
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
-                    }}
+                  <button
+                    type="button"
+                    className="icon-button danger goal-del-btn"
+                    onClick={() => deleteGoal(goal._id, goal.name)}
+                    aria-label={`Delete ${goal.name}`}
+                    title={`Delete ${goal.name}`}
                   >
-                    {isCompleted ? <CheckCircle2 size={18} /> : <PiggyBank size={18} />}
-                  </div>
-                  <div>
-                    <h2 style={{ fontSize: "1.1rem", margin: 0 }}>{goal.name}</h2>
-                    {goal.targetDate && (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontSize: "0.75rem",
-                          color: "var(--ink-muted)",
-                          marginTop: "2px",
-                        }}
-                      >
-                        <Calendar size={12} /> Target: {formatDate(goal.targetDate)}
-                      </span>
-                    )}
-                  </div>
+                    <Trash2 size={14} />
+                  </button>
                 </div>
 
                 {goal.description && (
-                  <p style={{ fontSize: "0.82rem", color: "var(--ink-secondary)", margin: "4px 0 0" }}>
+                  <p className="goal-memo-text">
                     {goal.description}
                   </p>
                 )}
 
-                <div style={{ marginTop: "12px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
-                    <span style={{ fontSize: "0.85rem", color: "var(--ink-muted)" }}>Accumulated</span>
-                    <b style={{ color: "var(--ink)", fontSize: "0.95rem" }}>
+                {/* Progress Visual Bar */}
+                <div className="goal-progress-section">
+                  <div className="goal-progress-header">
+                    <span className="goal-progress-label">Milestone Progress</span>
+                    <span className={`goal-progress-badge ${isCompleted ? "completed" : ""}`}>
                       {progress}%
-                    </b>
+                    </span>
                   </div>
-                  <div className="progress">
+                  <div className="progress progress-goal">
                     <i
+                      className="progress-fill"
                       style={{
                         width: `${progress}%`,
                         background: isCompleted
-                          ? "var(--income)"
+                          ? "linear-gradient(90deg, var(--income), #34d399)"
                           : "linear-gradient(90deg, var(--brand), var(--brand-light))",
                       }}
                     />
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "10px 12px",
-                    backgroundColor: "var(--surface-subtle)",
-                    borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--border)",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  <div>
-                    <span style={{ display: "block", fontSize: "0.72rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>
-                      Current
-                    </span>
-                    <strong style={{ color: "var(--ink)" }}>
+                {/* Financial Values Grid */}
+                <div className="goal-metrics-box">
+                  <div className="goal-metric-item">
+                    <span className="metric-tag">Accumulated</span>
+                    <strong className="metric-val income">
                       <Money value={Number(goal.currentAmount) || 0} />
                     </strong>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <span style={{ display: "block", fontSize: "0.72rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>
-                      Target
-                    </span>
-                    <strong style={{ color: "var(--ink)" }}>
+                  <div className="goal-metric-divider" />
+                  <div className="goal-metric-item">
+                    <span className="metric-tag">Target Cap</span>
+                    <strong className="metric-val">
                       <Money value={Number(goal.targetAmount) || 0} />
                     </strong>
                   </div>
                 </div>
 
-                <small style={{ color: "var(--ink-muted)", display: "block", fontSize: "0.78rem" }}>
-                  {isCompleted ? (
-                    <span style={{ color: "var(--income)", fontWeight: 600 }}>
-                      🎉 Goal accomplished!
-                    </span>
-                  ) : (
-                    <>
-                      <Money value={Number(goal.remaining) || 0} /> needed ·{" "}
-                      <Money value={Number(goal.requiredMonthlySaving) || 0} /> / month pace
-                    </>
-                  )}
-                </small>
+                {/* Pace info & Deposit Button */}
+                <div className="goal-card-actions">
+                  <div className="goal-pace-note">
+                    {isCompleted ? (
+                      <span className="accomplished-badge">
+                        🎉 Milestone Reached! Capital Secured.
+                      </span>
+                    ) : (
+                      <>
+                        <span className="pace-remaining">
+                          <Money value={Number(goal.remaining) || 0} /> needed
+                        </span>
+                        <span className="pace-rate">
+                          • <Money value={Number(goal.requiredMonthlySaving) || 0} />/mo pace
+                        </span>
+                      </>
+                    )}
+                  </div>
 
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => addSavings(goal)}
-                >
-                  <Plus size={15} />
-                  <span>Deposit Funds</span>
-                </button>
+                  <button
+                    type="button"
+                    className="button button-secondary goal-deposit-btn"
+                    onClick={() => {
+                      setDepositGoal(goal);
+                      setDepositAmount("");
+                    }}
+                  >
+                    <Plus size={15} />
+                    <span>Deposit Savings</span>
+                  </button>
+                </div>
               </article>
             );
           })}
         </div>
       )}
 
+      {/* New Goal Modal */}
       {show && (
-        <Modal title="Create Savings Goal" onClose={() => setShow(false)}>
-          <form onSubmit={save}>
+        <Modal title="Establish Savings Milestone" onClose={() => setShow(false)}>
+          <form onSubmit={save} className="goal-form">
             <div className="form-grid">
               <label className="wide">
-                Goal Name
+                <span className="form-label-text">Milestone Name</span>
                 <input
                   name="name"
                   required
-                  placeholder="e.g. Emergency Fund, Home Downpayment, Vacation"
+                  placeholder="e.g. Emergency Liquidity Reserve, Home Downpayment"
                   autoFocus
                 />
               </label>
 
               <label>
-                Target Amount
+                <span className="form-label-text">Target Capital Amount</span>
                 <input
                   name="targetAmount"
                   type="number"
@@ -294,12 +327,12 @@ export default function GoalsPage() {
               </label>
 
               <label>
-                Target Date
+                <span className="form-label-text">Target Milestone Date</span>
                 <input name="targetDate" type="date" required />
               </label>
 
               <label className="wide">
-                Initial Deposit Amount
+                <span className="form-label-text">Initial Inflow / Seed Amount</span>
                 <input
                   name="currentAmount"
                   type="number"
@@ -310,10 +343,10 @@ export default function GoalsPage() {
               </label>
 
               <label className="wide">
-                Description (Optional)
+                <span className="form-label-text">Goal Memo / Purpose (Optional)</span>
                 <input
                   name="description"
-                  placeholder="Why is this milestone important?"
+                  placeholder="Define investment purpose, account allocation, or timeline"
                 />
               </label>
             </div>
@@ -326,9 +359,65 @@ export default function GoalsPage() {
               >
                 Cancel
               </button>
-
               <button type="submit" className="button button-primary">
-                Save Goal
+                Create Goal
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Deposit Savings Modal */}
+      {depositGoal && (
+        <Modal
+          title={`Deposit Funds to "${depositGoal.name}"`}
+          onClose={() => setDepositGoal(null)}
+        >
+          <form onSubmit={submitDeposit} className="deposit-form">
+            <div className="deposit-summary-card">
+              <div className="deposit-row">
+                <span>Current Accumulated:</span>
+                <strong><Money value={Number(depositGoal.currentAmount) || 0} /></strong>
+              </div>
+              <div className="deposit-row">
+                <span>Target Cap:</span>
+                <strong><Money value={Number(depositGoal.targetAmount) || 0} /></strong>
+              </div>
+              <div className="deposit-row">
+                <span>Remaining to Goal:</span>
+                <strong className="brand"><Money value={Number(depositGoal.remaining) || 0} /></strong>
+              </div>
+            </div>
+
+            <label style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span className="form-label-text">Deposit Amount</span>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+                autoFocus
+                placeholder="0.00"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+              />
+            </label>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setDepositGoal(null)}
+                disabled={depositBusy}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={depositBusy || !depositAmount || Number(depositAmount) <= 0}
+              >
+                {depositBusy ? "Crediting Reserve…" : "Confirm Deposit"}
               </button>
             </div>
           </form>
