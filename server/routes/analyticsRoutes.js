@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { protect } from "../middleware/auth.js";
+import * as c from "../controllers/analyticsController.js";
+const r = Router();
+r.use(protect);
+r.get("/summary", c.summary);
+r.get("/categories", c.categories);
+r.get("/monthly", c.monthly);
+r.get("/trends", c.trends);
+export default r;
