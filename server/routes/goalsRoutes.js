@@ -4,5 +4,5 @@ import * as c from "../controllers/goalController.js";
 const r = Router();
 r.use(protect);
 r.route("/").get(c.list).post(c.create);
-r.route("/:id").put(c.update).delete(c.remove);
+r.route("/:id").put(c.update).patch(c.update).delete(c.remove);
 export default r;

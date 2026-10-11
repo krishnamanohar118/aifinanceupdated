@@ -78,12 +78,11 @@ function TransactionForm({ item, onClose, onSaved }) {
         ...form,
         amount: Number(form.amount),
       };
-
-      if (item) {
-        await api.put(`/transactions/${item._id}`, payload);
-      } else {
-        await api.post("/api/transactions", payload);
-      }
+if (item) {
+  await api.put(`/api/transactions/${item._id}`, payload);
+} else {
+  await api.post("/api/transactions", payload);
+}
 
       onSaved();
     } catch (err) {

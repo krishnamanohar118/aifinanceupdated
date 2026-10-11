@@ -102,7 +102,7 @@ export default function GoalsPage() {
 
     try {
       setError("");
-      await api.delete(`/goals/${id}`);
+      await api.delete(`/api/goals/${id}`);
       await load();
     } catch (err) {
       console.error("Delete goal error:", err);
