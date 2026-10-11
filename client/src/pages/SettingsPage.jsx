@@ -20,7 +20,7 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      const r = await api.put("/profile", {
+      const r = await api.put("/api/profile", {
         name,
         currency,
         theme,
