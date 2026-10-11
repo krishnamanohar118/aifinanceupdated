@@ -2,33 +2,40 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:
+  baseURL: (
     import.meta.env.VITE_API_URL ||
-    "https://aifinancetracker.onrender.com",
+    "https://aifinancetracker.onrender.com"
+  ).replace(/\/+$/, ""),
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("finance_token");
+// Add authentication token to every request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("finance_token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  return config;
-});
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+// Handle API responses and errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    error.status = error.response?.status;
+
     error.message =
       error.response?.data?.message ||
       error.message ||
       "Request failed. Please try again.";
 
-    error.status = error.response?.status;
     return Promise.reject(error);
   }
 );
