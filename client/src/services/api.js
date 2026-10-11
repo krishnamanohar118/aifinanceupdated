@@ -1,3 +1,4 @@
+
 import axios from "axios";
 
 const api = axios.create({
@@ -30,7 +31,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     error.status = error.response?.status;
-
     error.message =
       error.response?.data?.message ||
       error.message ||

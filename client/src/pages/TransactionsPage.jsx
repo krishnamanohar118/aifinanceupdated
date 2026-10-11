@@ -277,7 +277,7 @@ export default function TransactionsPage() {
 
     try {
       setError("");
-      await api.delete(`/transactions/${id}`);
+      await api.delete(`/api/transactions/${id}`);
       await load();
     } catch (err) {
       console.error("Failed to delete transaction:", err);
