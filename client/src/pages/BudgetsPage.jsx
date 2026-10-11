@@ -75,7 +75,7 @@ export default function BudgetsPage() {
 
     try {
       setError("");
-      await api.delete(`/budgets/${id}`);
+      await api.delete(`/api/budgets/${id}`);
       await load();
     } catch (err) {
       setError(
