@@ -32,7 +32,9 @@ export default function ReportsPage() {
     setLoading(true);
     setError("");
     try {
-      const r = await api.get("/reports/yearly", { params: { year } });
+      const r = await api.get("/api/reports/yearly", {
+  params: { year },
+});
       setReport(r.data.report);
     } catch (err) {
       setError(
