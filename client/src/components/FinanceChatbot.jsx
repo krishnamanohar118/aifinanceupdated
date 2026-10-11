@@ -72,7 +72,7 @@ export default function FinanceChatbot() {
     setLoading(true);
 
     try {
-      const response = await api.post("/assistant", {
+      const response = await api.post("/api/assistant", {
         question: questionText,
         goals: goalsRef.current,
       });
