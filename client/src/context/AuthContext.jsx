@@ -1,5 +1,7 @@
+
 import { createContext, useEffect, useMemo, useState } from "react";
 import api from "../services/api";
+
 export const AuthContext = createContext(null);
 
 const TOKEN_KEY = "finance_token";
@@ -27,13 +29,15 @@ function clearSession() {
 
 export function AuthProvider({ children }) {
   const [user, setUserState] = useState(() => {
-      const token = localStorage.getItem(TOKEN_KEY);
-      return token ? readStoredUser() : null;
-    }),
-    [loading, setLoading] = useState(true);
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token ? readStoredUser() : null;
+  });
+
+  const [loading, setLoading] = useState(true);
 
   const setUser = (nextUser) => {
     setUserState(nextUser);
+
     if (nextUser) {
       localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     } else {
@@ -43,16 +47,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
+
     if (!token) {
       clearSession();
       setLoading(false);
       return;
     }
+
     api
-      .get("/auth/me")
+      .get("/api/auth/me")
       .then((r) => setUser(r.data.user))
       .catch((error) => {
-        if (error?.status === 401) {
+        if (error?.response?.status === 401 || error?.status === 401) {
           clearSession();
           setUserState(null);
         }
@@ -64,27 +70,36 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       loading,
+
       async login(values) {
-        const r = await api.post("/auth/login", values);
+        const r = await api.post("/api/auth/login", values);
         saveSession(r.data.token, r.data.user);
         setUserState(r.data.user);
       },
+
       async register(values) {
-        const r = await api.post("/auth/register", values);
+        const r = await api.post("/api/auth/register", values);
         saveSession(r.data.token, r.data.user);
         setUserState(r.data.user);
       },
+
       async logout() {
         try {
-          await api.post("/auth/logout");
+          await api.post("/api/auth/logout");
         } finally {
           clearSession();
           setUserState(null);
         }
       },
+
       setUser,
     }),
-    [user, loading],
+    [user, loading]
   );
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
