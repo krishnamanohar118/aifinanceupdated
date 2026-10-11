@@ -112,11 +112,6 @@ export default function LandingPage() {
         <Brand />
 
         <div className="marketing-nav-right">
-          <div className="marketing-status-pill" title="System Operational">
-            <span className="system-dot" />
-            <span>Telemetry Online</span>
-          </div>
-
           <button
             className="theme-toggle-btn"
             onClick={toggleTheme}
@@ -362,7 +357,7 @@ export default function LandingPage() {
                 <Bot size={32} />
               </div>
 
-              <div className="eyebrow" style={{ color: "var(--brand-light)" }}>
+              <div className="eyebrow spotlight-eyebrow">
                 Autonomous Financial Agent
               </div>
 
@@ -386,8 +381,15 @@ export default function LandingPage() {
                   <Sparkles size={13} />
                   <span>FinSight AI</span>
                 </div>
-                <p>
-                  Based on your current month-to-date inflows of <b>₹1,20,000</b> and essential expenses of <b>₹45,200</b>, your remaining unbudgeted surplus is <b>₹74,800</b>. Earmarking <b>₹25,000</b> to your Emergency Reserve today will bring you to <b>82%</b> of your target milestone ahead of schedule.
+               <p className="sample-response-text">
+  Based on your current month-to-date inflows of <b>₹1,20,000</b> and
+  essential expenses of <b>₹45,200</b>, your remaining unbudgeted
+  surplus is <b>₹74,800</b>. Earmarking <b>₹25,000</b> to your
+  Emergency Reserve today will bring you to <b>82%</b> of your
+  target milestone ahead of schedule.
+</p>
+                <p className="finance-insight-text">
+                  *This is a simulated response for demonstration purposes only.
                 </p>
               </div>
             </div>
@@ -397,7 +399,7 @@ export default function LandingPage() {
         {/* Call to Action Banner */}
         <section className="cta-banner-wrapper">
           <div className="card cta-banner-card">
-            <div className="eyebrow" style={{ color: "#a7f3d0" }}>
+            <div className="eyebrow cta-eyebrow">
               Private & Self-Contained
             </div>
             <h2>Take Command of Your Wealth Trajectory.</h2>

@@ -137,7 +137,6 @@ export function useScrollAnimation() {
         ".hero-actions",
         ".trust-strip",
         ".trust-item",
-        ".marketing-status-pill",
         ".command-signals-list",
         ".command-signal-row",
         ".assistant-dialog-preview",

@@ -47,13 +47,13 @@ export default function AuthPage({ mode }) {
 
         <div className="auth-header-block">
           <div className="eyebrow auth-eyebrow">
-            <LockKeyhole size={14} /> 256-Bit Cryptographic Workspace
+            <LockKeyhole size={14} /> Private and secure
           </div>
-          <h1>{isLogin ? "Sign In to FinSight" : "Open Your Workspace"}</h1>
+          <h1>{isLogin ? "Welcome back" : "Create your account"}</h1>
           <p>
             {isLogin
-              ? "Access institutional cashflow telemetry, category guardrails, and savings trajectories."
-              : "Establish your private financial command center with automated intelligence."}
+              ? "Sign in to see your spending, savings, and personalized insights."
+              : "Track your spending, set savings goals, and make more confident decisions."}
           </p>
         </div>
 
@@ -132,39 +132,38 @@ export default function AuthPage({ mode }) {
             type="submit"
           >
             <span>
-              {busy ? "Authenticating Session…" : isLogin ? "Sign In to Workspace" : "Create Private Account"}
+              {busy ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
             </span>
             <ArrowRight size={16} />
           </button>
         </form>
 
         <p className="auth-switch">
-          {isLogin ? "New to FinSight?" : "Already established an account?"}{" "}
+          {isLogin ? "New to FinSight?" : "Already have an account?"}{" "}
           <Link to={target}>
-            {isLogin ? "Open an account" : "Sign in here"}
+            {isLogin ? "Create an account" : "Sign in"}
           </Link>
         </p>
 
         <Link className="back-home" to="/">
-          ← Return to Public Overview
+          ← Back to overview
         </Link>
       </div>
 
       <aside className="auth-hero-aside">
         <div className="aside-eyebrow">
-          <ShieldCheck size={16} /> Institutional Financial Intelligence
+          <ShieldCheck size={16} /> FinSight AI
         </div>
-        <h2>Data-driven clarity across every financial decision.</h2>
+        <h2>Take control of your finances.</h2>
         <p className="aside-subtext">
-          Consolidate inflows, recurring expenditure guardrails, and automated savings pace within an end-to-end encrypted workspace.
+          Understand your money, build better habits, and make confident financial decisions.
         </p>
 
         <div className="aside-highlights-list">
           {[
-            "Real-time cashflow telemetry & trend analytics",
-            "Intelligent budget guardrails with proactive drift alerts",
-            "Goal-aligned capital accumulation trajectories",
-            "Private by design with local session persistence",
+            "Track everyday expenses",
+            "Set and reach savings goals",
+            "Get insights powered by AI",
           ].map((item) => (
             <div key={item} className="aside-highlight-item">
               <CheckCircle2 size={18} className="aside-check-icon" />
