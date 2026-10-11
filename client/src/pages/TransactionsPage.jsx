@@ -82,7 +82,7 @@ function TransactionForm({ item, onClose, onSaved }) {
       if (item) {
         await api.put(`/transactions/${item._id}`, payload);
       } else {
-        await api.post("/transactions", payload);
+        await api.post("/api/transactions", payload);
       }
 
       onSaved();

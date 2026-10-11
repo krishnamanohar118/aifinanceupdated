@@ -54,7 +54,7 @@ export default function BudgetsPage() {
     try {
       setBusy(true);
       setError("");
-      await api.post("/budgets", data);
+      await api.post("/api/budgets", data);
       setShow(false);
       await load();
     } catch (err) {

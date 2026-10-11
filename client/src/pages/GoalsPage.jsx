@@ -55,7 +55,7 @@ export default function GoalsPage() {
     try {
       setError("");
       const data = Object.fromEntries(new FormData(e.target));
-      await api.post("/goals", data);
+      await api.post("/api/goals", data);
       setShow(false);
       await load();
     } catch (err) {
@@ -75,9 +75,11 @@ export default function GoalsPage() {
     try {
       setDepositBusy(true);
       setError("");
-      await api.put(`/goals/${depositGoal._id}`, {
-        currentAmount: Number(depositGoal.currentAmount || 0) + Number(depositAmount),
-      });
+      await api.patch(`/api/goals/${depositGoal._id}`, {
+  currentAmount:
+    Number(depositGoal.currentAmount || 0) +
+    Number(depositAmount),
+});
       setDepositGoal(null);
       setDepositAmount("");
       await load();
