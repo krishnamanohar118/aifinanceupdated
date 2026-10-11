@@ -12,7 +12,7 @@ export default function NotificationsPage() {
   const loadNotifications = async () => {
     try {
       setError("");
-      const response = await api.get("/notifications");
+      const response = await api.get("/api/notifications");
       setData(response.data);
     } catch (err) {
       console.error("Failed to load notifications:", err);

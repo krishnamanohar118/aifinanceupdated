@@ -165,23 +165,23 @@ export default function AnalyticsPage() {
     setData(null);
     setErr("");
 
-    Promise.all([
-      api.get("/analytics/summary", {
-        params: { period },
-      }),
+   Promise.all([
+  api.get("/api/analytics/summary", {
+    params: { period },
+  }),
 
-      api.get("/analytics/categories", {
-        params: { period },
-      }),
+  api.get("/api/analytics/categories", {
+    params: { period },
+  }),
 
-      api.get("/analytics/monthly", {
-        params: { months: 6 },
-      }),
+  api.get("/api/analytics/monthly", {
+    params: { months: 6 },
+  }),
 
-      api.get("/analytics/trends", {
-        params: { period },
-      }),
-    ])
+  api.get("/api/analytics/trends", {
+    params: { period },
+  }),
+])
       .then(([s, c, m, t]) => {
         setData({
           s: s.data.data || {},

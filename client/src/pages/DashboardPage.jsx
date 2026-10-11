@@ -25,7 +25,7 @@ export default function DashboardPage() {
     const loadDashboard = async () => {
       try {
         setError("");
-        const response = await api.get("/dashboard");
+       const response = await api.get("/api/dashboard");
 
         if (mounted) {
           setData(response.data?.data || null);

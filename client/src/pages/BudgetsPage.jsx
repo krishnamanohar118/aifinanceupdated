@@ -31,7 +31,7 @@ export default function BudgetsPage() {
   const load = async () => {
     try {
       setError("");
-      const response = await api.get("/budgets");
+      const response = await api.get("/api/budgets");
       setItems(response.data.items || []);
     } catch (err) {
       setError(

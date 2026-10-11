@@ -243,7 +243,7 @@ export default function TransactionsPage() {
     try {
       setError("");
 
-      const response = await api.get("/transactions", {
+      const response = await api.get("/api/transactions", {
         params: filters,
       });
 

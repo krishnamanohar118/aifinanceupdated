@@ -31,7 +31,7 @@ export default function GoalsPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/goals");
+      const response = await api.get("/api/goals");
       setItems(response.data?.items || []);
     } catch (err) {
       console.error("Goals load error:", err);

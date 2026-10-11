@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 const api = axios.create({
@@ -17,6 +16,7 @@ api.interceptors.request.use(
     const token = localStorage.getItem("finance_token");
 
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
 
