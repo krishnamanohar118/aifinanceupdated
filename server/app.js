@@ -23,7 +23,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://aifinanceupdated.vercel.app",
+       "https://finsightaiweb.vercel.app",
     ],
     credentials: true,
   }),
