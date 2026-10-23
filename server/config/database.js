@@ -1,19 +1,26 @@
+
 import mongoose from "mongoose";
 
 export async function connectDatabase() {
   if (!process.env.MONGODB_URI) {
-    console.warn(
-      "MongoDB is not configured: MONGODB_URI is missing. The API will run without a database.",
-    );
-    return false;
+    throw new Error("MONGODB_URI is missing");
   }
 
+  const start = Date.now();
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB connected: ${mongoose.connection.host}`);
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    });
+
+    console.log(
+      `MongoDB connected in ${Date.now() - start} ms`
+    );
+
     return true;
   } catch (error) {
-    console.error(`MongoDB connection failed: ${error.message}`);
-    return false;
+    console.error("MongoDB connection failed:", error.message);
+    throw error;
   }
 }
